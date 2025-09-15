@@ -6,47 +6,90 @@ import subprocess
 from datetime import timedelta
 from pathlib import Path
 
-input_edf_dir = Path("01_data_files/01_edf_raw")
-output_edf_dir = Path("01_data_files/02_edf_cropped")
-
-
-def _change_to_git_root():
+# main function
+def main():
     """
-    Change the current working directory to the git repository root.
+    Main function to process EDF files by cropping them to 24 hours.
+    """
+    setup_environment()
+    input_dir, output_dir = setup_directories()
+    file_list = discover_edf_files(input_dir)
+    process_all_files(file_list, input_dir, output_dir)
+
+def setup_environment():
+    """
+    Set up the environment by changing to git repository root.
+    """
+    _change_to_git_root()
+
+def setup_directories():
+    """
+    Set up input and output directories and ensure output directory exists.
     
-    This ensures the script runs from the correct location regardless of
-    where it's executed from.
+    Returns
+    -------
+    tuple
+        A tuple containing (input_dir, output_dir) as Path objects.
     """
-    try:
-        # Get the git root directory
-        git_root = subprocess.check_output(
-            ['git', 'rev-parse', '--show-toplevel'], 
-            stderr=subprocess.DEVNULL
-        ).decode('utf-8').strip()
-        
-        # Change to git root directory
-        os.chdir(git_root)
-        print(f"Changed working directory to git root: {git_root}")
-        
-    except subprocess.CalledProcessError:
-        print("Warning: Not in a git repository or git not available")
-    except Exception as e:
-        print(f"Warning: Could not change to git root: {e}")
+    input_dir = Path("01_data_files/01_edf_raw")
+    output_dir = Path("01_data_files/02_edf_cropped")
+    
+    # Ensure output directory exists
+    output_dir.mkdir(parents=True, exist_ok=True)
+    
+    return input_dir, output_dir
 
+def discover_edf_files(input_dir):
+    """
+    Discover all EDF files in the input directory.
+    
+    Parameters
+    ----------
+    input_dir : Path
+        The input directory to search for EDF files.
+        
+    Returns
+    -------
+    list
+        List of Path objects for all EDF files found.
+    """
+    file_list = list(input_dir.glob("*.edf"))
+    return file_list
 
-def crop_edf_to_24_hours(
-        input_edf_path,
-        output_edf_path,
-        file_num,
-        total_files):
+def process_all_files(file_list, input_dir, output_dir):
+    """
+    Process all EDF files by cropping them to 24 hours.
+    
+    Parameters
+    ----------
+    file_list : list
+        List of Path objects for EDF files to process.
+    input_dir : Path
+        The input directory containing EDF files.
+    output_dir : Path
+        The output directory for cropped EDF files.
+    """
+    total_files = len(file_list)
+    
+    for i, file in enumerate(file_list):
+        input_edf_path = file
+        output_edf_path = output_dir / str(file.stem + ".edf")
+        crop_edf_to_24_hours(input_edf_path, output_edf_path, i + 1, total_files)
+
+def crop_edf_to_24_hours(input_edf_path, output_edf_path, file_num, total_files):
     """
     Crop the EDF file to the first 24 hours of data and save it.
 
-    Parameters:
-    - input_edf_path (path): The path to the input EDF file.
-    - output_edf_path (path): The path to save the cropped EDF file.
-    - file_num (int): Current file index (for progress tracking).
-    - total_files (int): Total number of files being processed.
+    Parameters
+    ----------
+    input_edf_path : Path
+        The path to the input EDF file.
+    output_edf_path : Path
+        The path to save the cropped EDF file.
+    file_num : int
+        Current file index (for progress tracking).
+    total_files : int
+        Total number of files being processed.
     """
     # Read the EDF file using high-level functions
     signals, signal_headers, header = pyedflib.highlevel.read_edf(
@@ -72,17 +115,29 @@ def crop_edf_to_24_hours(
 
     print(f"Processed file {file_num}/{total_files}: {input_edf_path.name}")
 
+def _change_to_git_root():
+    """
+    Change the current working directory to the git repository root.
+    
+    This ensures the script runs from the correct location regardless of
+    where it's executed from.
+    """
+    try:
+        # Get the git root directory
+        git_root = subprocess.check_output(
+            ['git', 'rev-parse', '--show-toplevel'], 
+            stderr=subprocess.DEVNULL
+        ).decode('utf-8').strip()
+        
+        # Change to git root directory
+        os.chdir(git_root)
+        print(f"Changed working directory to git root: {git_root}")
+        
+    except subprocess.CalledProcessError:
+        print("Warning: Not in a git repository or git not available")
+    except Exception as e:
+        print(f"Warning: Could not change to git root: {e}")
+
 
 if __name__ == "__main__":
-    # Ensure we're running from git repository root
-    _change_to_git_root()
-    
-    # List all edf files in input dir
-    file_list = list(input_edf_dir.glob("*.edf"))
-    total_files = len(file_list)
-
-    for i, file in enumerate(file_list):
-        input_edf_path = file
-        output_edf_path = output_edf_dir / str(file.stem + ".edf")
-
-        crop_edf_to_24_hours(input_edf_path, output_edf_path, i, total_files)
+    main()
