@@ -12,25 +12,24 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 # Import the module under test
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 import importlib.util
 spec = importlib.util.spec_from_file_location(
     "fft_create", 
     os.path.join(os.path.dirname(__file__), '..', '02_preprocessing',
                  '03_fft_create.py')
 )
-fft_autoscore = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(fft_autoscore)
+fft_create = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(fft_create)
 
 # Import functions from the module
-setup_parameters = fft_autoscore.setup_parameters
-setup_directories = fft_autoscore.setup_directories
-discover_edf_files = fft_autoscore.discover_edf_files
-read_edf_signals = fft_autoscore.read_edf_signals
-process_all_channels = fft_autoscore.process_all_channels
-process_single_channel = fft_autoscore.process_single_channel
-perform_fft_analysis = fft_autoscore.perform_fft_analysis
-save_results_to_csv = fft_autoscore.save_results_to_csv
+setup_parameters = fft_create.setup_parameters
+setup_directories = fft_create.setup_directories
+discover_edf_files = fft_create.discover_edf_files
+read_edf_signals = fft_create.read_edf_signals
+process_all_channels = fft_create.process_all_channels
+process_single_channel = fft_create.process_single_channel
+perform_fft_analysis = fft_create.perform_fft_analysis
+save_results_to_csv = fft_create.save_results_to_csv
 
 
 class TestFFTProcessing:
@@ -79,7 +78,7 @@ class TestFFTProcessing:
         assert params['channel_name_mapping'][1] == "occ"
         assert params['channel_name_mapping'][2] == "foc"
     
-    @patch('fft_autoscore.Path')
+    @patch('pathlib.Path')
     def test_setup_directories(self, mock_path):
         """Test directory setup and creation."""
         mock_input_dir = MagicMock()
@@ -121,7 +120,7 @@ class TestFFTProcessing:
         assert len(result) == 0
         assert isinstance(result, list)
     
-    @patch('fft_autoscore.pyedflib.EdfReader')
+    @patch('pyedflib.EdfReader')
     def test_read_edf_signals_three_channels(self, mock_edf_reader, sample_parameters):
         """Test reading EDF signals with three channels."""
         # Mock EDF reader
@@ -145,7 +144,7 @@ class TestFFTProcessing:
         channel_indices = [signal_data[0] for signal_data in result]
         assert channel_indices == [0, 1, 2]
     
-    @patch('fft_autoscore.pyedflib.EdfReader')
+    @patch('pyedflib.EdfReader')
     def test_read_edf_signals_more_than_three_channels(self, mock_edf_reader, sample_parameters):
         """Test reading EDF signals with more than three channels (should limit to 3)."""
         # Mock EDF reader with 5 channels
@@ -305,7 +304,7 @@ class TestIntegration:
             'channel_name_mapping': {0: "fro", 1: "occ", 2: "foc"}
         }
     
-    @patch('fft_autoscore.read_edf_signals')
+    @patch('99_tests.test_03_fft_create.read_edf_signals')
     def test_full_pipeline_integration(self, mock_read_signals, temp_directory, sample_parameters):
         """Test the complete pipeline with mocked EDF data."""
         # Create mock EDF files
