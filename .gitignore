@@ -1,6 +1,7 @@
-
+# vim
 *.swp
 
+# data 
 *.csv
 *.txt
 *.edf
@@ -8,5 +9,11 @@
 *.npy
 *.pickle
 
-
+# Aider
 .aider*
+
+# mac files 
+.DS*
+
+# python
+**/__pycache__/
