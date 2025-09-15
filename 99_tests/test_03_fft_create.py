@@ -81,7 +81,7 @@ class TestFFTProcessing:
     def test_setup_directories(self, temp_directory):
         """Test directory setup and creation."""
         # Test that the function returns Path objects and creates output directory
-        with patch('pathlib.Path') as mock_path:
+        with patch('02_preprocessing.03_fft_create.Path') as mock_path:
             mock_input_dir = MagicMock()
             mock_output_dir = MagicMock()
             mock_path.side_effect = [mock_input_dir, mock_output_dir]
