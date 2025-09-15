@@ -89,8 +89,8 @@ class TestFFTProcessing:
             input_dir, output_dir = setup_directories()
             
             # Verify paths were created correctly
-            mock_path.assert_any_call("01_data_files/02_edf_cropped")
-            mock_path.assert_any_call("01_data_files/06_fft_files")
+            mock_path.assert_any_call("01_data_files/03_edf_cropped")
+            mock_path.assert_any_call("01_data_files/04_fft_files")
             
             # Verify output directory creation was called
             mock_output_dir.mkdir.assert_called_once_with(parents=True, exist_ok=True)
