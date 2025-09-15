@@ -19,3 +19,18 @@
 ### TODO List Cleanup
 - Removed three TODO items: error handling for input directory, output directory creation, and missing EDF files
 - Focused TODO list on testing the updated paths
+
+## 2025-09-16
+
+### AIDER.md Guidelines Refactoring for 01_crop_edfs.py
+- Refactored script structure to align with AIDER.md guidelines (commit 411facf)
+- Created proper main() function with clear pseudo-code flow: setup_environment() → setup_directories() → discover_edf_files() → process_all_files()
+- Reorganized function order: main function placed after imports, supporting functions defined after main
+- Removed global variables input_edf_dir and output_edf_dir, now handled within functions with proper parameters
+- Added setup_directories() function that ensures output directory exists using mkdir(parents=True, exist_ok=True)
+- Added discover_edf_files() function to handle EDF file discovery separately from main logic
+- Added setup_environment() function to handle git root directory change
+- Updated process_all_files() function to handle the file processing loop with proper parameters
+- Maintained proper function naming: _change_to_git_root() keeps underscore (utility function not called from main)
+- All functions now have NumPy style docstrings with proper Parameters and Returns sections
+- Script now follows the example structure from AIDER.md with clear separation of concerns
