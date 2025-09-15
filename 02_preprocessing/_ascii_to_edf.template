@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<EDFbrowser_ascii2edf_template>
+  <separator> </separator>
+  <columns>4</columns>
+  <startline>1</startline>
+  <samplefrequency>256.0000000000</samplefrequency>
+  <autophysicalmaximum>1</autophysicalmaximum>
+  <edf_format>1</edf_format>
+  <signalparams>
+    <checked>1</checked>
+    <label>chan. 0</label>
+    <physical_maximum>3000</physical_maximum>
+    <physical_dimension>uV</physical_dimension>
+    <multiplier>1.000000</multiplier>
+  </signalparams>
+  <signalparams>
+    <checked>1</checked>
+    <label>chan. 1</label>
+    <physical_maximum>3000</physical_maximum>
+    <physical_dimension>uV</physical_dimension>
+    <multiplier>1.000000</multiplier>
+  </signalparams>
+  <signalparams>
+    <checked>1</checked>
+    <label>chan. 2</label>
+    <physical_maximum>3000</physical_maximum>
+    <physical_dimension>uV</physical_dimension>
+    <multiplier>1.000000</multiplier>
+  </signalparams>
+  <signalparams>
+    <checked>1</checked>
+    <label>chan. 3</label>
+    <physical_maximum>3000</physical_maximum>
+    <physical_dimension>uV</physical_dimension>
+    <multiplier>1.000000</multiplier>
+  </signalparams>
+</EDFbrowser_ascii2edf_template>
