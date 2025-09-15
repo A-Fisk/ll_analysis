@@ -1,46 +1,69 @@
 #!/bin/bash
 
-# get template file 
-template_file="/Users/angusfisk/Documents/01_personal_files/01_work/11_LL_paper/02_analysis/10_edf_create/ascii_to_edf.template"
+# Main function to convert txt files to EDF format
+main() {
+    setup_environment
+    setup_directories
+    convert_all_files
+}
 
-echo $template_file
+# Change to git repository root directory
+setup_environment() {
+    cd "$(git rev-parse --show-toplevel)" || {
+        echo "Error: Not in a git repository or git not available"
+        exit 1
+    }
+}
 
+# Set up directory paths and ensure output directory exists
+setup_directories() {
+    TEMPLATE_FILE="10_edf_create/ascii_to_edf.template"
+    ASCII_CONVERTER="/Users/angusfisk/Documents/01_personal_files/01_work/09_github_repos/ascii2edf/ascii2edf"
+    INPUT_DIR="01_data_files/02_txt"
+    OUTPUT_DIR="01_data_files/01_edf_raw"
+    
+    # Ensure output directory exists
+    mkdir -p "$OUTPUT_DIR"
+    
+    echo "Using template file: $TEMPLATE_FILE"
+}
 
-ascii="/Users/angusfisk/Documents/01_personal_files/01_work/09_github_repos/ascii2edf/ascii2edf"
+# Convert all txt files in input directory to EDF format
+convert_all_files() {
+    local counter=1
+    
+    # Loop through each file in the input directory
+    for file in "$INPUT_DIR"/*; do
+        if [[ -f "$file" ]]; then
+            convert_single_file "$file" "$counter"
+            ((counter++))
+        fi
+    done
+}
 
-# apply ascii function 
-#$asciif $first_file $template_file "Mouse" "date" "2018" "04" "09" "00" "00" "00" save_name
-
-# Directory containing the input files
-input_directory="/Users/angusfisk/Documents/01_personal_files/01_work/11_LL_paper/02_analysis/01_data_files/02_txt"
-
-# Directory to store the output EDF files
-output_directory="/Users/angusfisk/Documents/01_personal_files/01_work/11_LL_paper/02_analysis/01_data_files/01_edf/01_script"
-
-counter=1
-
-#FIRST_FILE=$(find "$input_directory" -maxdepth 1 -type f | head -n 1)
-
-#$ascii $FIRST_FILE $template_file "Mouse" "date" "18" "04" "09" "00" "00" "00" "$output_directory/test.edf"  # Adjust file extension as needed
-
-# Loop through each file in the input directory
-for file in "$input_directory"/*; do
-    # Check if it's a file
-    # Get the base name of the file (without the directory path)
-    base_name=$(basename "$file")
-    echo "Attempting to read template file in loop $counter"
-
-    # Run ascii2edf on the file
-    # Change `ascii2edf` to the full path if necessary
-    $ascii "$file" $template_file "Mouse" "date" "18" "04" "09" "00" "00" "00" "$output_directory/${base_name%.txt}.edf"  # Adjust file extension as needed
-
-    # Check if the command succeeded
+# Convert a single txt file to EDF format
+convert_single_file() {
+    local input_file="$1"
+    local file_counter="$2"
+    local base_name
+    local output_file
+    
+    base_name=$(basename "$input_file")
+    output_file="$OUTPUT_DIR/${base_name%.txt}.edf"
+    
+    echo "Processing file $file_counter: $base_name"
+    
+    # Run ascii2edf conversion
+    "$ASCII_CONVERTER" "$input_file" "$TEMPLATE_FILE" "Mouse" "date" "18" "04" "09" "00" "00" "00" "$output_file"
+    
+    # Check conversion result
     if [[ $? -eq 0 ]]; then
-        echo "Converted $file to $output_directory/${base_name%.txt}.edf"
+        echo "Successfully converted $input_file to $output_file"
     else
-        echo "Failed to convert"
-        #$file
+        echo "Failed to convert $input_file"
     fi
-    ((counter++))
-done
+}
+
+# Execute main function
+main "$@"
 
