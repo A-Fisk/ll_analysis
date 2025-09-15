@@ -34,3 +34,33 @@
 - Maintained proper function naming: _change_to_git_root() keeps underscore (utility function not called from main)
 - All functions now have NumPy style docstrings with proper Parameters and Returns sections
 - Script now follows the example structure from AIDER.md with clear separation of concerns
+
+### Bash Script Refactoring for 01_convert_to_edf.sh
+- Refactored bash script structure to follow similar principles as Python guidelines (commit f57be8e)
+- Created main() function with clear pseudo-code flow: setup_environment → setup_directories → convert_all_files
+- Reorganized function order: main function at top, supporting functions defined after
+- Removed hardcoded absolute paths and converted to relative paths from git repository root
+- Added setup_environment() function that changes to git root using `cd "$(git rev-parse --show-toplevel)"`
+- Added setup_directories() function that sets up directory paths and ensures output directory exists with `mkdir -p`
+- Added convert_all_files() function to handle the main conversion loop
+- Added convert_single_file() function to process individual files with proper parameters
+- Cleaned up variable names using proper bash conventions (UPPERCASE for constants, lowercase for local variables)
+- Removed all commented-out code and unused variables for cleaner script
+- Added function documentation with clear descriptions of what each function does
+- Added proper error handling structure with meaningful error messages
+
+### FFT Processing Script Refactoring for 03_fft_autoscore.py
+- Refactored script structure to align with AIDER.md guidelines (commit 4e3a9e0)
+- Created proper main() function with clear pseudo-code flow: setup_environment() → setup_parameters() → setup_directories() → discover_edf_files() → process_all_files()
+- Reorganized function order: main function placed after imports, supporting functions defined after main
+- Removed all global variables (input_directory, output_directory, sampling_rate, etc.) and converted to function parameters
+- Converted hardcoded absolute path to relative paths from git root: input "01_data_files/02_edf_cropped", output "01_data_files/06_fft_files"
+- Added setup_parameters() function that returns dictionary with all FFT analysis parameters
+- Added setup_directories() function that ensures output directory exists using mkdir(parents=True, exist_ok=True)
+- Added discover_edf_files() function to handle EDF file discovery separately from main logic
+- Added setup_environment() function with _change_to_git_root() for consistent execution location
+- Added process_all_files() function to handle the main processing loop with progress tracking
+- Renamed process_edf_file() to process_single_edf_file() for clarity and updated to use parameter dictionary
+- Added NumPy style docstrings to all functions with proper Parameters and Returns sections
+- Added _change_to_git_root() utility function with proper error handling for git operations
+- Script now follows the example structure from AIDER.md with clear separation of concerns and modular design
