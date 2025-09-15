@@ -17,10 +17,10 @@ setup_environment() {
 
 # Set up directory paths and ensure output directory exists
 setup_directories() {
-    TEMPLATE_FILE="10_edf_create/ascii_to_edf.template"
-    ASCII_CONVERTER="/Users/angusfisk/Documents/01_personal_files/01_work/09_github_repos/ascii2edf/ascii2edf"
-    INPUT_DIR="01_data_files/02_txt"
-    OUTPUT_DIR="01_data_files/01_edf_raw"
+    TEMPLATE_FILE="02_preprocessing/_ascii_to_edf.template"
+    ASCII_CONVERTER="/Users/angusfisk/Documents/github_repos/ascii2edf/ascii2edf"
+    INPUT_DIR="01_data_files/01_txt_files"
+    OUTPUT_DIR="01_data_files/02_edf_raw"
     
     # Ensure output directory exists
     mkdir -p "$OUTPUT_DIR"
