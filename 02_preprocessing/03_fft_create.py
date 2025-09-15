@@ -54,8 +54,8 @@ def setup_directories():
     tuple
         A tuple containing (input_dir, output_dir) as Path objects.
     """
-    input_dir = Path("01_data_files/02_edf_cropped")
-    output_dir = Path("01_data_files/06_fft_files")
+    input_dir = Path("01_data_files/03_edf_cropped")
+    output_dir = Path("01_data_files/04_fft_files")
     
     # Ensure output directory exists
     output_dir.mkdir(parents=True, exist_ok=True)
