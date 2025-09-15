@@ -6,8 +6,8 @@ import subprocess
 from datetime import timedelta
 from pathlib import Path
 
-input_edf_dir = Path("data/edf/raw")
-output_edf_dir = Path("data/edf/cropped")
+input_edf_dir = Path("01_data_files/01_edf_raw")
+output_edf_dir = Path("01_data_files/02_edf_cropped")
 
 
 def _change_to_git_root():
