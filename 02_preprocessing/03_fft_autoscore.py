@@ -2,35 +2,120 @@ import pyedflib
 import pdb
 import numpy as np
 import pandas as pd
+import os
+import subprocess
 from pathlib import Path
 
-# Parameters
+# main function
+def main():
+    """
+    Main function to process EDF files and generate FFT analysis.
+    """
+    setup_environment()
+    parameters = setup_parameters()
+    input_dir, output_dir = setup_directories()
+    file_list = discover_edf_files(input_dir)
+    process_all_files(file_list, parameters, output_dir)
 
-input_directory = Path(
-    '/Users/angusfisk/Documents/01_personal_files/01_work/'
-    '11_LL_paper/02_analysis/01_data_files/01_edf/03_test'
-)
-output_directory = input_directory.parents[1] / '06_fft_files' / '01_script'
-sampling_rate = 256  # Sampling rate in Hz
-window_length = 4  # Length of the window in seconds
-window_samples = window_length * sampling_rate
-# Number of samples in the window
-freq_bin_size = 0.25  # Size of frequency bins in Hz
-freq_limit = 20  # frequency limit in Hz
+def setup_environment():
+    """
+    Set up the environment by changing to git repository root.
+    """
+    _change_to_git_root()
 
-# Create output directory if it doesn't exist
-output_directory.mkdir(exist_ok=True)
+def setup_parameters():
+    """
+    Set up FFT analysis parameters.
+    
+    Returns
+    -------
+    dict
+        Dictionary containing all FFT parameters.
+    """
+    parameters = {
+        'sampling_rate': 256,  # Sampling rate in Hz
+        'window_length': 4,    # Length of the window in seconds
+        'freq_bin_size': 0.25, # Size of frequency bins in Hz
+        'freq_limit': 20,      # frequency limit in Hz
+        'channel_name_mapping': {0: "fro", 1: "occ", 2: "foc"}
+    }
+    
+    # Calculate window samples
+    parameters['window_samples'] = parameters['window_length'] * parameters['sampling_rate']
+    
+    return parameters
 
-# Channel name mapping
-channel_name_mapping = {0: "fro", 1: "occ", 2: "foc"}
+def setup_directories():
+    """
+    Set up input and output directories and ensure output directory exists.
+    
+    Returns
+    -------
+    tuple
+        A tuple containing (input_dir, output_dir) as Path objects.
+    """
+    input_dir = Path("01_data_files/02_edf_cropped")
+    output_dir = Path("01_data_files/06_fft_files")
+    
+    # Ensure output directory exists
+    output_dir.mkdir(parents=True, exist_ok=True)
+    
+    return input_dir, output_dir
 
-# Function to process a single EDF file
+def discover_edf_files(input_dir):
+    """
+    Discover all EDF files in the input directory.
+    
+    Parameters
+    ----------
+    input_dir : Path
+        The input directory to search for EDF files.
+        
+    Returns
+    -------
+    list
+        List of Path objects for all EDF files found.
+    """
+    file_list = list(input_dir.glob("*.edf"))
+    return file_list
 
+def process_all_files(file_list, parameters, output_dir):
+    """
+    Process all EDF files with FFT analysis.
+    
+    Parameters
+    ----------
+    file_list : list
+        List of Path objects for EDF files to process.
+    parameters : dict
+        Dictionary containing FFT parameters.
+    output_dir : Path
+        The output directory for FFT results.
+    """
+    total_files = len(file_list)
+    
+    for count, edf_file in enumerate(file_list, start=1):
+        process_single_edf_file(edf_file, parameters, output_dir)
+        print(f"Processed {count}/{total_files} files.")
+    
+    print("FFT processing complete for all files.")
 
-def process_edf_file(edf_file_path):
+def process_single_edf_file(edf_file_path, parameters, output_dir):
+    """
+    Process a single EDF file and generate FFT analysis.
+    
+    Parameters
+    ----------
+    edf_file_path : Path
+        Path to the EDF file to process.
+    parameters : dict
+        Dictionary containing FFT parameters.
+    output_dir : Path
+        The output directory for FFT results.
+    """
     # Get the filename stem for output
     filename_stem = edf_file_path.stem
-    output_file_path = output_directory / f"{filename_stem}.csv"
+    output_file_path = output_dir / f"{filename_stem}.csv"
 
     # Read the EDF file
     with pyedflib.EdfReader(str(edf_file_path)) as f:
@@ -44,43 +129,43 @@ def process_edf_file(edf_file_path):
             signal = f.readSignal(channel_index)
 
             # Calculate number of windows
-            n_windows = len(signal) // window_samples
+            n_windows = len(signal) // parameters['window_samples']
 
             # Frequency array for FFT
             frequencies = np.fft.fftfreq(
-                window_samples, d=1 / sampling_rate
-            )[:window_samples // 2]
+                parameters['window_samples'], d=1 / parameters['sampling_rate']
+            )[:parameters['window_samples'] // 2]
 
             # Process each window
             for i in range(n_windows):
-                start_sample = i * window_samples
-                end_sample = start_sample + window_samples
+                start_sample = i * parameters['window_samples']
+                end_sample = start_sample + parameters['window_samples']
                 signal_window = signal[start_sample:end_sample]
 
                 # Perform FFT
                 fft_result = np.fft.fft(signal_window)
-                magnitude = np.abs(fft_result[:window_samples // 2])
+                magnitude = np.abs(fft_result[:parameters['window_samples'] // 2])
                 # Get magnitude for positive frequencies
 
                 # Filter frequencies and magnitudes
                 # to keep only those between 0 and 20 Hz
-                valid_indices = frequencies <= freq_limit
+                valid_indices = frequencies <= parameters['freq_limit']
                 valid_frequencies = frequencies[valid_indices]
                 valid_magnitude = magnitude[valid_indices]
 
                 # Bin the results for the valid frequencies
-                num_bins = int(freq_limit / freq_bin_size) + 1
+                num_bins = int(parameters['freq_limit'] / parameters['freq_bin_size']) + 1
                 binned_magnitude = np.zeros(num_bins)
 
                 for j in range(len(valid_frequencies)):
-                    bin_index = int(valid_frequencies[j] // freq_bin_size)
+                    bin_index = int(valid_frequencies[j] // parameters['freq_bin_size'])
                     binned_magnitude[bin_index] += valid_magnitude[j]
 
                 # Prepare data for aggregation
-                frequency_bins = np.arange(num_bins) * freq_bin_size
+                frequency_bins = np.arange(num_bins) * parameters['freq_bin_size']
                 for bin_freq, bin_mag in zip(frequency_bins, binned_magnitude):
                     all_results.append({
-                        'Channel': channel_name_mapping.get(
+                        'Channel': parameters['channel_name_mapping'].get(
                             channel_index, f"Channel {channel_index}"
                         ),
                         'Frequency (Hz)': bin_freq,
@@ -103,13 +188,28 @@ def process_edf_file(edf_file_path):
 
     print(f"Saved all binned FFT results to {output_file_path}")
 
+def _change_to_git_root():
+    """
+    Change the current working directory to the git repository root.
+    """
+    try:
+        # Get the git repository root directory
+        result = subprocess.run(
+            ['git', 'rev-parse', '--show-toplevel'],
+            capture_output=True, text=True, check=True
+        )
+        git_root = result.stdout.strip()
+        
+        # Change to the git root directory
+        os.chdir(git_root)
+        print(f"Changed to git repository root: {git_root}")
+        
+    except subprocess.CalledProcessError:
+        print("Error: Not in a git repository or git not available")
+        exit(1)
+    except FileNotFoundError:
+        print("Error: git command not found")
+        exit(1)
 
-# Process all EDF files in the input directory
-edf_files = list(input_directory.glob('*.edf'))
-total_files = len(edf_files)
-
-for count, edf_file in enumerate(edf_files, start=1):
-    process_edf_file(edf_file)
-    print(f"Processed {count}/{total_files} files.")
-
-print("FFT processing complete for all files.")
+if __name__ == "__main__":
+    main()
