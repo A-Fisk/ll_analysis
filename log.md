@@ -15,3 +15,7 @@
 - Added error handling for cases where git is not available or not in a git repository
 - Updated main execution to call this function first
 - Marked "Verify script follows AIDER.md guidelines" as completed
+
+### TODO List Cleanup
+- Removed three TODO items: error handling for input directory, output directory creation, and missing EDF files
+- Focused TODO list on testing the updated paths
