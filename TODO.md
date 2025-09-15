@@ -2,9 +2,9 @@
 
 ## 02_preprocessing/01_crop_edfs.py File Structure Updates
 
-- [ ] Replace hardcoded absolute path with relative path from git repository root
-- [ ] Update input_edf_dir to use current file structure (determine correct path)
-- [ ] Update output_edf_dir to use current file structure (determine correct path)
+- [x] Replace hardcoded absolute path with relative path from git repository root
+- [x] Update input_edf_dir to use current file structure (determine correct path)
+- [x] Update output_edf_dir to use current file structure (determine correct path)
 - [ ] Add error handling to check if input directory exists
 - [ ] Add logic to create output directory if it doesn't exist
 - [ ] Add error handling for missing EDF files

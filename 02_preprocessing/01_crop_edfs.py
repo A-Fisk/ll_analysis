@@ -4,11 +4,8 @@ import numpy as np
 from datetime import timedelta
 from pathlib import Path
 
-input_edf_dir = Path(
-    "/Users/angusfisk/Documents/01_personal_files/01_work/"
-    "11_LL_paper/02_analysis/01_data_files/01_edf/01_script"
-)
-output_edf_dir = input_edf_dir.parent / "02_cropped"
+input_edf_dir = Path("data/edf/raw")
+output_edf_dir = Path("data/edf/cropped")
 
 
 def crop_edf_to_24_hours(
