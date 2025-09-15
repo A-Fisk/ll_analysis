@@ -78,24 +78,25 @@ class TestFFTProcessing:
         assert params['channel_name_mapping'][1] == "occ"
         assert params['channel_name_mapping'][2] == "foc"
     
-    @patch('pathlib.Path')
-    def test_setup_directories(self, mock_path):
+    def test_setup_directories(self, temp_directory):
         """Test directory setup and creation."""
-        mock_input_dir = MagicMock()
-        mock_output_dir = MagicMock()
-        mock_path.side_effect = [mock_input_dir, mock_output_dir]
-        
-        input_dir, output_dir = setup_directories()
-        
-        # Verify paths were created correctly
-        mock_path.assert_any_call("01_data_files/02_edf_cropped")
-        mock_path.assert_any_call("01_data_files/06_fft_files")
-        
-        # Verify output directory creation was called
-        mock_output_dir.mkdir.assert_called_once_with(parents=True, exist_ok=True)
-        
-        assert input_dir == mock_input_dir
-        assert output_dir == mock_output_dir
+        # Test that the function returns Path objects and creates output directory
+        with patch('pathlib.Path') as mock_path:
+            mock_input_dir = MagicMock()
+            mock_output_dir = MagicMock()
+            mock_path.side_effect = [mock_input_dir, mock_output_dir]
+            
+            input_dir, output_dir = setup_directories()
+            
+            # Verify paths were created correctly
+            mock_path.assert_any_call("01_data_files/02_edf_cropped")
+            mock_path.assert_any_call("01_data_files/06_fft_files")
+            
+            # Verify output directory creation was called
+            mock_output_dir.mkdir.assert_called_once_with(parents=True, exist_ok=True)
+            
+            assert input_dir == mock_input_dir
+            assert output_dir == mock_output_dir
     
     def test_discover_edf_files_with_files(self, temp_directory):
         """Test EDF file discovery with existing files."""
@@ -274,12 +275,12 @@ class TestFFTProcessing:
         # Verify CSV content
         df = pd.read_csv(output_file, index_col=[0, 1])
         assert df.shape[0] == 2  # 2 channels
-        assert 0.0 in df.columns
-        assert 0.25 in df.columns
+        assert '0.0' in df.columns
+        assert '0.25' in df.columns
         
         # Check values
-        assert df.loc[('fro', 1), 0.0] == 10.0
-        assert df.loc[('occ', 1), 0.25] == 3.0
+        assert df.loc[('fro', 1), '0.0'] == 10.0
+        assert df.loc[('occ', 1), '0.25'] == 3.0
 
 
 class TestIntegration:
@@ -304,7 +305,7 @@ class TestIntegration:
             'channel_name_mapping': {0: "fro", 1: "occ", 2: "foc"}
         }
     
-    @patch('99_tests.test_03_fft_create.read_edf_signals')
+    @patch('test_03_fft_create.read_edf_signals')
     def test_full_pipeline_integration(self, mock_read_signals, temp_directory, sample_parameters):
         """Test the complete pipeline with mocked EDF data."""
         # Create mock EDF files
