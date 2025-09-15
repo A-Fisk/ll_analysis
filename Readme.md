@@ -2,6 +2,14 @@
 
 Repo for analysis scripts for LL paper 
 
+## In this repo
+- data exported from system as txt format
+
+1. Convert back to edf format with 02_preprocessing/01_convert_to_edf.sh
+2. crop edfs to only 24 hours using 02_preprocessing/02_crop_edfs.py
+
+
+
 ## Data preprocessing
 - Recorded in TDT tanks into their proprietary format
 - export as ? format by matlab scripts 

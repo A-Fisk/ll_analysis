@@ -28,6 +28,7 @@ Always follow the instructions in this file
 - All code should execute from the root of the git repo
 - Only functions *not* called in main should start with _
 - Create NumPy style docstrings for all functions
+- use `black` to format check python scripts 
 
 ## Example 
 ```
