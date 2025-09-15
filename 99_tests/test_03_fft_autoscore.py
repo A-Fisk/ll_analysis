@@ -15,8 +15,9 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 import importlib.util
 spec = importlib.util.spec_from_file_location(
-    "fft_autoscore", 
-    os.path.join(os.path.dirname(__file__), '..', '02_preprocessing', '03_fft_autoscore.py')
+    "fft_create", 
+    os.path.join(os.path.dirname(__file__), '..', '02_preprocessing',
+                 '03_fft_create.py')
 )
 fft_autoscore = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(fft_autoscore)
