@@ -64,3 +64,18 @@
 - Added NumPy style docstrings to all functions with proper Parameters and Returns sections
 - Added _change_to_git_root() utility function with proper error handling for git operations
 - Script now follows the example structure from AIDER.md with clear separation of concerns and modular design
+
+### FFT Processing Function Refactoring for Improved Readability
+- Further refactored process_single_edf_file() function to improve readability and maintainability
+- Broke down the complex 80-line function into 6 smaller, focused functions with single responsibilities
+- Created read_edf_signals() function to handle EDF file reading and signal extraction (returns list of tuples)
+- Created process_all_channels() function to orchestrate processing of all channels and aggregate results
+- Created process_single_channel() function to handle individual channel signal processing and windowing
+- Created perform_fft_analysis() function to isolate FFT computation, frequency filtering, and binning logic
+- Created save_results_to_csv() function to handle DataFrame creation, pivoting, and CSV file saving
+- Updated main process_single_edf_file() to read like clear pseudo-code: read_signals → process_channels → save_results
+- Each new function has single responsibility and can be tested/debugged independently
+- All functions maintain NumPy style docstrings with proper Parameters and Returns sections
+- Improved code reusability - functions like perform_fft_analysis() can be used elsewhere
+- Complex nested loops and FFT logic now separated into logical, manageable chunks
+- Functionality remains identical but code is significantly more readable and maintainable

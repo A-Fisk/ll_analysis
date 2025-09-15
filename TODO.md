@@ -39,3 +39,14 @@
 - [x] Add git root setup function for consistent execution location
 - [x] Add NumPy style docstrings to all functions
 - [x] Break down processing into modular functions with clear separation of concerns
+
+## 02_preprocessing/03_fft_autoscore.py Function Refactoring for Readability
+
+- [x] Break down process_single_edf_file function into smaller, focused functions
+- [x] Create read_edf_signals function to handle EDF file reading
+- [x] Create process_all_channels function to orchestrate channel processing
+- [x] Create process_single_channel function to handle individual channel processing
+- [x] Create perform_fft_analysis function to isolate FFT computation and binning
+- [x] Create save_results_to_csv function to handle DataFrame creation and CSV saving
+- [x] Update main process_single_edf_file to read like pseudo-code with clear steps
+- [x] Add NumPy style docstrings to all new functions with proper Parameters and Returns sections
