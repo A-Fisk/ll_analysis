@@ -1,11 +1,37 @@
 import pdb
 import pyedflib
 import numpy as np
+import os
+import subprocess
 from datetime import timedelta
 from pathlib import Path
 
 input_edf_dir = Path("data/edf/raw")
 output_edf_dir = Path("data/edf/cropped")
+
+
+def _change_to_git_root():
+    """
+    Change the current working directory to the git repository root.
+    
+    This ensures the script runs from the correct location regardless of
+    where it's executed from.
+    """
+    try:
+        # Get the git root directory
+        git_root = subprocess.check_output(
+            ['git', 'rev-parse', '--show-toplevel'], 
+            stderr=subprocess.DEVNULL
+        ).decode('utf-8').strip()
+        
+        # Change to git root directory
+        os.chdir(git_root)
+        print(f"Changed working directory to git root: {git_root}")
+        
+    except subprocess.CalledProcessError:
+        print("Warning: Not in a git repository or git not available")
+    except Exception as e:
+        print(f"Warning: Could not change to git root: {e}")
 
 
 def crop_edf_to_24_hours(
@@ -48,6 +74,9 @@ def crop_edf_to_24_hours(
 
 
 if __name__ == "__main__":
+    # Ensure we're running from git repository root
+    _change_to_git_root()
+    
     # List all edf files in input dir
     file_list = list(input_edf_dir.glob("*.edf"))
     total_files = len(file_list)

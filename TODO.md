@@ -9,5 +9,5 @@
 - [ ] Add logic to create output directory if it doesn't exist
 - [ ] Add error handling for missing EDF files
 - [ ] Test the updated paths work correctly from repository root
-- [ ] Verify the script follows AIDER.md guidelines (runs from repo root)
+- [x] Verify the script follows AIDER.md guidelines (runs from repo root)
 - [ ] Add proper error messages for file/directory not found cases

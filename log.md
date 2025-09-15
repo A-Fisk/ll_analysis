@@ -7,3 +7,10 @@
 - Updated output directory from `input_edf_dir.parent / "02_cropped"` to relative path `data/edf/cropped`
 - Both paths now work from git repository root as specified in AIDER.md guidelines
 - Marked first three TODO items as completed
+
+### Added Git Root Directory Function
+- Added `_change_to_git_root()` function to ensure script always runs from git repository root
+- Function uses `git rev-parse --show-toplevel` to find git root directory
+- Added error handling for cases where git is not available or not in a git repository
+- Updated main execution to call this function first
+- Marked "Verify script follows AIDER.md guidelines" as completed
