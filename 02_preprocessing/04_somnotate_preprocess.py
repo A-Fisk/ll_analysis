@@ -31,7 +31,7 @@ except ImportError:
     warnings.warn(message)
     from scipy.signal import spectrogram as get_spectrogram
 
-from data_io import (
+from _data_io import (
     ArgumentParser,
     load_dataframe,
     check_dataframe,
@@ -79,7 +79,7 @@ def parse_arguments():
     args : argparse.Namespace
         Parsed command line arguments containing spreadsheet_file_path, show, and only.
     """
-    from configuration import (
+    from _configuration import (
         time_resolution,
         state_annotation_signals,
         plot_raw_signals,
