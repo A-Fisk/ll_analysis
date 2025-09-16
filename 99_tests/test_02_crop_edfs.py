@@ -41,7 +41,7 @@ class TestCropEDFs:
 
     def test_setup_directories(self, temp_directory):
         """Test that setup_directories creates correct paths and directories."""
-        with patch('test_02_crop_edfs.Path') as mock_path:
+        with patch.object(crop_edfs, 'Path') as mock_path:
             # Mock Path objects
             mock_input_dir = MagicMock()
             mock_output_dir = MagicMock()
@@ -90,7 +90,7 @@ class TestCropEDFs:
         assert len(file_list) == 0
         assert file_list == []
 
-    @patch('test_02_crop_edfs.crop_edf_to_24_hours')
+    @patch.object(crop_edfs, 'crop_edf_to_24_hours')
     def test_process_all_files(self, mock_crop_function, temp_directory):
         """Test processing all files calls crop function for each file."""
         # Create test input and output directories
@@ -121,8 +121,8 @@ class TestCropEDFs:
         ]
         mock_crop_function.assert_has_calls(expected_calls)
 
-    @patch('test_02_crop_edfs.pyedflib.highlevel.write_edf')
-    @patch('test_02_crop_edfs.pyedflib.highlevel.read_edf')
+    @patch.object(crop_edfs.pyedflib.highlevel, 'write_edf')
+    @patch.object(crop_edfs.pyedflib.highlevel, 'read_edf')
     def test_crop_edf_to_24_hours_normal_case(self, mock_read_edf, mock_write_edf, temp_directory):
         """Test cropping EDF file with normal 48-hour data to 24 hours."""
         # Mock EDF data - simulate 48 hours of data at 1 Hz
@@ -180,8 +180,8 @@ class TestCropEDFs:
         updated_header = write_args[3]
         assert updated_header["record_duration"] == 24 * 60 * 60
 
-    @patch('test_02_crop_edfs.pyedflib.highlevel.write_edf')
-    @patch('test_02_crop_edfs.pyedflib.highlevel.read_edf')
+    @patch.object(crop_edfs.pyedflib.highlevel, 'write_edf')
+    @patch.object(crop_edfs.pyedflib.highlevel, 'read_edf')
     def test_crop_edf_to_24_hours_short_data(self, mock_read_edf, mock_write_edf, temp_directory):
         """Test cropping EDF file with less than 24 hours of data."""
         # Mock EDF data - simulate 12 hours of data at 1 Hz
@@ -219,8 +219,8 @@ class TestCropEDFs:
         for signal in cropped_signals:
             assert len(signal) == hours_12_samples  # All available data
 
-    @patch('test_02_crop_edfs.subprocess.check_output')
-    @patch('test_02_crop_edfs.os.chdir')
+    @patch.object(crop_edfs.subprocess, 'check_output')
+    @patch.object(crop_edfs.os, 'chdir')
     def test_change_to_git_root_success(self, mock_chdir, mock_check_output):
         """Test successful change to git root directory."""
         mock_git_root = "/path/to/git/root"
@@ -237,8 +237,8 @@ class TestCropEDFs:
         # Verify directory change
         mock_chdir.assert_called_once_with(mock_git_root)
 
-    @patch('test_02_crop_edfs.subprocess.check_output')
-    @patch('test_02_crop_edfs.os.chdir')
+    @patch.object(crop_edfs.subprocess, 'check_output')
+    @patch.object(crop_edfs.os, 'chdir')
     def test_change_to_git_root_not_git_repo(self, mock_chdir, mock_check_output):
         """Test handling when not in a git repository."""
         mock_check_output.side_effect = crop_edfs.subprocess.CalledProcessError(1, 'git')
@@ -249,10 +249,10 @@ class TestCropEDFs:
         # Should not change directory
         mock_chdir.assert_not_called()
 
-    @patch('test_02_crop_edfs.setup_environment')
-    @patch('test_02_crop_edfs.setup_directories')
-    @patch('test_02_crop_edfs.discover_edf_files')
-    @patch('test_02_crop_edfs.process_all_files')
+    @patch.object(crop_edfs, 'setup_environment')
+    @patch.object(crop_edfs, 'setup_directories')
+    @patch.object(crop_edfs, 'discover_edf_files')
+    @patch.object(crop_edfs, 'process_all_files')
     def test_main_function_flow(self, mock_process_all, mock_discover, mock_setup_dirs, mock_setup_env):
         """Test that main function calls all steps in correct order."""
         # Mock return values
@@ -282,8 +282,8 @@ class TestIntegration:
         yield Path(temp_dir)
         shutil.rmtree(temp_dir)
 
-    @patch('test_02_crop_edfs.pyedflib.highlevel.read_edf')
-    @patch('test_02_crop_edfs.pyedflib.highlevel.write_edf')
+    @patch.object(crop_edfs.pyedflib.highlevel, 'read_edf')
+    @patch.object(crop_edfs.pyedflib.highlevel, 'write_edf')
     def test_full_pipeline_integration(self, mock_write_edf, mock_read_edf, temp_directory):
         """Test the complete pipeline from file discovery to cropping."""
         # Set up test directory structure
@@ -351,8 +351,8 @@ class TestIntegration:
         # Should complete without error
         process_all_files(file_list, empty_dir, output_dir)
 
-    @patch('test_02_crop_edfs.pyedflib.highlevel.read_edf')
-    @patch('test_02_crop_edfs.pyedflib.highlevel.write_edf')
+    @patch.object(crop_edfs.pyedflib.highlevel, 'read_edf')
+    @patch.object(crop_edfs.pyedflib.highlevel, 'write_edf')
     def test_edge_case_high_sample_rate(self, mock_write_edf, mock_read_edf, temp_directory):
         """Test cropping with high sample rate data."""
         # High sample rate: 1000 Hz
