@@ -9,6 +9,7 @@ import numpy as np
 import pandas
 
 from argparse import ArgumentParser
+
 try:
     # python < 3.3
     from collections import Iterable
@@ -47,7 +48,7 @@ def check_dataframe(df, columns, column_to_dtype=None):
         if not (column in df.columns):
             not_present.append(column)
 
-    if not_present: # empty list evaluates to False
+    if not_present:  # empty list evaluates to False
         error_msg = "The provided spreadsheet misses the following columns:"
         for column in not_present:
             error_msg += "\n{}".format(column)
@@ -72,7 +73,9 @@ def check_dataframe(df, columns, column_to_dtype=None):
                     wrong_types.append((column, actual_dtype, expected_dtype))
             else:
                 type_error_msg = "Values in column_to_dtype have to be either instances of type or an iterable thereof. Currently:"
-                type_error_msg += "\ntype(column_to_dtype[{}] = {})".format(column, type(column_to_type[column]))
+                type_error_msg += "\ntype(column_to_dtype[{}] = {})".format(
+                    column, type(column_to_type[column])
+                )
                 raise TypeError(type_error_msg)
 
         if wrong_types:
@@ -87,6 +90,7 @@ def _handle_file_path(func):
         pathlib_object = _get_pathlib_object(file_path)
         output = func(pathlib_object, *args, **kwargs)
         return output
+
     func_wrapper.__name__ = func.__name__
     func_wrapper.__doc__ = func.__doc__
     return func_wrapper
@@ -125,7 +129,11 @@ def _load_edf_file(file_path, signal_labels=None):
 
 def _load_edf_channels(signal_labels, edf_reader):
 
-    indices = [idx for idx in range(edf_reader.signals_in_file) if ensure_str(edf_reader.signal_label(idx)).strip() in signal_labels]
+    indices = [
+        idx
+        for idx in range(edf_reader.signals_in_file)
+        if ensure_str(edf_reader.signal_label(idx)).strip() in signal_labels
+    ]
 
     # assert len(indices) == len(signal_labels), "Could not recover all given signals."
     if len(indices) != len(signal_labels):
@@ -138,8 +146,12 @@ def _load_edf_channels(signal_labels, edf_reader):
         raise Exception(error_msg)
 
     total_samples = [edf_reader.samples_in_file(idx) for idx in indices]
-    assert len(set(total_samples)) == 1, "All signals need to have the same length! Lengths of selected signals: {}".format(total_samples)
-    total_samples, = set(total_samples)
+    assert (
+        len(set(total_samples)) == 1
+    ), "All signals need to have the same length! Lengths of selected signals: {}".format(
+        total_samples
+    )
+    (total_samples,) = set(total_samples)
 
     output_array = np.zeros((len(signal_labels), total_samples), dtype=np.int32)
     for jj, idx in enumerate(indices):
@@ -174,8 +186,10 @@ def load_state_vector(file_path, mapping, time_resolution=1):
     states, intervals = load_hypnogram(file_path)
 
     from somnotate._utils import convert_state_intervals_to_state_vector
+
     state_vector = convert_state_intervals_to_state_vector(
-        states, intervals, mapping=mapping, time_resolution=time_resolution)
+        states, intervals, mapping=mapping, time_resolution=time_resolution
+    )
 
     return state_vector
 
@@ -202,16 +216,18 @@ def _load_visbrain_hypnogram(file_path):
     -----------
     http://visbrain.org/sleep.html#save-hypnogram
     """
-    dtype = [('Stage', '|S30'), ('stop', float)]
-    data = np.genfromtxt(file_path, skip_header=2, dtype=dtype, delimiter='\t')
-    states = [state.astype(str).strip() for state in data['Stage']]
-    transitions = np.r_[0, data['stop']]
+    dtype = [("Stage", "|S30"), ("stop", float)]
+    data = np.genfromtxt(file_path, skip_header=2, dtype=dtype, delimiter="\t")
+    states = [state.astype(str).strip() for state in data["Stage"]]
+    transitions = np.r_[0, data["stop"]]
     intervals = list(zip(transitions[:-1], transitions[1:]))
     return states, intervals
 
 
 @_handle_file_path
-def _export_visbrain_hypnogram(file_path, states, intervals, total_time=None, data_file=None):
+def _export_visbrain_hypnogram(
+    file_path, states, intervals, total_time=None, data_file=None
+):
     """
     Export hypnogram to visbrain Stage-duration format.
 
@@ -269,17 +285,25 @@ def _export_visbrain_hypnogram(file_path, states, intervals, total_time=None, da
     states = [states[ii] for ii in order]
 
     # assert that no two intervals overlap
-    assert not np.any(intervals[:-1, 1] > intervals[1:, 0]), "The hypnogram format does not support overlapping intervals!"
+    assert not np.any(
+        intervals[:-1, 1] > intervals[1:, 0]
+    ), "The hypnogram format does not support overlapping intervals!"
 
     # assert that there are no un-annotated gaps between intervals
-    assert np.all(intervals[:-1, 1] == intervals[1:, 0]), "The hypnogram format does not support having un-annotated time intervals!"
+    assert np.all(
+        intervals[:-1, 1] == intervals[1:, 0]
+    ), "The hypnogram format does not support having un-annotated time intervals!"
 
     # TODO: instead insert empty states for time intervals with no corresponding state
 
-    export_string += "".join(["{:{}}\t{:.1f}\n".format(state, string_length, stop) \
-                              for state, (start, stop) in zip(states, intervals)])
+    export_string += "".join(
+        [
+            "{:{}}\t{:.1f}\n".format(state, string_length, stop)
+            for state, (start, stop) in zip(states, intervals)
+        ]
+    )
 
-    with open(file_path, 'w') as f:
+    with open(file_path, "w") as f:
         f.write(export_string)
 
 
@@ -294,14 +318,14 @@ def export_review_intervals(file_path, intervals, scores=None, notes=None):
 
     data = dict()
 
-    data['start'] = [start for start, stop in intervals]
-    data['stop'] = [stop for start, stop in intervals]
+    data["start"] = [start for start, stop in intervals]
+    data["stop"] = [stop for start, stop in intervals]
 
     if not (scores is None):
-        data['score'] = scores
+        data["score"] = scores
 
     if not (notes is None):
-        data['note'] = notes
+        data["note"] = notes
 
     df = pandas.DataFrame.from_dict(data)
     df.to_csv(file_path)
@@ -310,8 +334,8 @@ def export_review_intervals(file_path, intervals, scores=None, notes=None):
 @_handle_file_path
 def load_review_intervals(file_path):
     df = pandas.read_csv(file_path)
-    intervals = np.c_[df['start'].values, df['stop'].values]
-    scores = df['score'].values
+    intervals = np.c_[df["start"].values, df["stop"].values]
+    scores = df["score"].values
     return intervals, scores
 
 

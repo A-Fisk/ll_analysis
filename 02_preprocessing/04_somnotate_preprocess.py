@@ -19,10 +19,12 @@ try:
     # pip install git+https://github.com/hbldh/lspopt.git#egg=lspopt
     from lspopt import spectrogram_lspopt
     from functools import partial
-    get_spectrogram = partial(spectrogram_lspopt, c_parameter=20.)
+
+    get_spectrogram = partial(spectrogram_lspopt, c_parameter=20.0)
 
 except ImportError:
     import warnings
+
     message = "Falling back to scipy.signal.spectrogram to compute the spectrogram,"
     message += "\nwhich computes the standard Baum-Welch spectrogram."
     message += "\nA multitaper approach may yield better results, "
@@ -49,10 +51,11 @@ from _configuration import (
     plot_raw_signals,
 )
 
+
 def main():
     """
     Main function to preprocess electrophysiological signals for sleep analysis.
-    
+
     Follows clear pseudo-code flow:
     1. Setup execution environment
     2. Parse command line arguments
@@ -61,14 +64,15 @@ def main():
     5. Process all datasets
     """
     setup_environment()
-    
+
     args = parse_arguments()
-    
+
     datasets = load_and_validate_datasets(args.spreadsheet_file_path)
-    
+
     datasets = filter_datasets(datasets, args.only)
-    
+
     process_all_datasets(datasets, args.show)
+
 
 def setup_environment():
     """
@@ -77,35 +81,46 @@ def setup_environment():
     _change_to_git_root()
     _validate_dependencies()
 
+
 def parse_arguments():
     """
     Parse command line arguments for preprocessing script.
-    
+
     Returns
     -------
     args : argparse.Namespace
         Parsed command line arguments containing spreadsheet_file_path, show, and only.
     """
     parser = ArgumentParser()
-    parser.add_argument("spreadsheet_file_path", help="Use datasets specified in /path/to/spreadsheet.csv")
-    parser.add_argument("-s", "--show", action="store_true", help="Plot the output figures of the script.")
-    parser.add_argument('--only',
-                        nargs = '+',
-                        type  = int,
-                        help  = 'Indices corresponding to the rows to use (default: all). Indexing starts at zero.'
+    parser.add_argument(
+        "spreadsheet_file_path",
+        help="Use datasets specified in /path/to/spreadsheet.csv",
+    )
+    parser.add_argument(
+        "-s",
+        "--show",
+        action="store_true",
+        help="Plot the output figures of the script.",
+    )
+    parser.add_argument(
+        "--only",
+        nargs="+",
+        type=int,
+        help="Indices corresponding to the rows to use (default: all). Indexing starts at zero.",
     )
     args = parser.parse_args()
     return args
 
+
 def load_and_validate_datasets(spreadsheet_file_path):
     """
     Load and validate datasets from spreadsheet file.
-    
+
     Parameters
     ----------
     spreadsheet_file_path : str
         Path to CSV file containing dataset information.
-        
+
     Returns
     -------
     datasets : pandas.DataFrame
@@ -115,31 +130,34 @@ def load_and_validate_datasets(spreadsheet_file_path):
     datasets = load_dataframe(spreadsheet_file_path)
 
     # check contents of spreadsheet
-    check_dataframe(datasets,
-                    columns = [
-                        'file_path_raw_signals',
-                        'sampling_frequency_in_hz',
-                        'file_path_preprocessed_signals',
-                    ] + state_annotation_signals,
-                    column_to_dtype = {
-                        'file_path_raw_signals' : str,
-                        'sampling_frequency_in_hz' : (int, float),
-                        'file_path_preprocessed_signals' : str,
-                    }
+    check_dataframe(
+        datasets,
+        columns=[
+            "file_path_raw_signals",
+            "sampling_frequency_in_hz",
+            "file_path_preprocessed_signals",
+        ]
+        + state_annotation_signals,
+        column_to_dtype={
+            "file_path_raw_signals": str,
+            "sampling_frequency_in_hz": (int, float),
+            "file_path_preprocessed_signals": str,
+        },
     )
     return datasets
+
 
 def filter_datasets(datasets, only_indices):
     """
     Filter datasets to specified indices if provided.
-    
+
     Parameters
     ----------
     datasets : pandas.DataFrame
         Full dataset dataframe.
     only_indices : list of int or None
         Specific row indices to process, or None for all rows.
-        
+
     Returns
     -------
     datasets : pandas.DataFrame
@@ -149,10 +167,11 @@ def filter_datasets(datasets, only_indices):
         datasets = datasets.loc[np.in1d(range(len(datasets)), only_indices)]
     return datasets
 
+
 def process_all_datasets(datasets, show_plots):
     """
     Process all datasets in the spreadsheet.
-    
+
     Parameters
     ----------
     datasets : pandas.DataFrame
@@ -161,16 +180,19 @@ def process_all_datasets(datasets, show_plots):
         Whether to display plots of raw signals and spectrograms.
     """
     for ii, (idx, dataset) in enumerate(datasets.iterrows()):
-        print("{} ({}/{})".format(dataset['file_path_raw_signals'], ii+1, len(datasets)))
+        print(
+            "{} ({}/{})".format(dataset["file_path_raw_signals"], ii + 1, len(datasets))
+        )
         process_single_dataset(dataset, show_plots)
-    
+
     if show_plots:
         plt.show()
+
 
 def process_single_dataset(dataset, show_plots):
     """
     Process a single dataset row.
-    
+
     Parameters
     ----------
     dataset : pandas.Series
@@ -182,28 +204,36 @@ def process_single_dataset(dataset, show_plots):
     signal_labels = [dataset[column_name] for column_name in state_annotation_signals]
 
     # load data
-    raw_signals = load_raw_signals(dataset['file_path_raw_signals'], signal_labels)
+    raw_signals = load_raw_signals(dataset["file_path_raw_signals"], signal_labels)
 
     # preprocess all signals
     preprocessed_signals, time, frequencies = preprocess_signals(
-        raw_signals, 
-        dataset['sampling_frequency_in_hz'], 
-        time_resolution
+        raw_signals, dataset["sampling_frequency_in_hz"], time_resolution
     )
 
     # show input and outputs for quality control
     if show_plots:
-        display_plots(raw_signals, preprocessed_signals, time, frequencies, 
-                     dataset['sampling_frequency_in_hz'])
+        display_plots(
+            raw_signals,
+            preprocessed_signals,
+            time,
+            frequencies,
+            dataset["sampling_frequency_in_hz"],
+        )
 
     # concatenate spectrograms into one set of features and save out
-    concatenated_signals = np.concatenate([signal.T for signal in preprocessed_signals], axis=1)
-    export_preprocessed_signals(dataset['file_path_preprocessed_signals'], concatenated_signals)
+    concatenated_signals = np.concatenate(
+        [signal.T for signal in preprocessed_signals], axis=1
+    )
+    export_preprocessed_signals(
+        dataset["file_path_preprocessed_signals"], concatenated_signals
+    )
+
 
 def preprocess_signals(raw_signals, sampling_frequency, time_resolution):
     """
     Preprocess all signals for a dataset.
-    
+
     Parameters
     ----------
     raw_signals : numpy.ndarray
@@ -212,7 +242,7 @@ def preprocess_signals(raw_signals, sampling_frequency, time_resolution):
         Sampling frequency in Hz.
     time_resolution : int
         Time resolution in seconds.
-        
+
     Returns
     -------
     preprocessed_signals : list of numpy.ndarray
@@ -225,25 +255,28 @@ def preprocess_signals(raw_signals, sampling_frequency, time_resolution):
     preprocessed_signals = []
     time = None
     frequencies = None
-    
+
     for signal in raw_signals.T:
         time, frequencies, preprocessed_signal = preprocess_single_signal(
-            signal, 
+            signal,
             sampling_frequency,
             time_resolution_in_sec=time_resolution,
-            low_cut=1.,
-            high_cut=90.,
-            notch_low_cut=45.,
-            notch_high_cut=55.,
+            low_cut=1.0,
+            high_cut=90.0,
+            notch_low_cut=45.0,
+            notch_high_cut=55.0,
         )
         preprocessed_signals.append(preprocessed_signal)
-    
+
     return preprocessed_signals, time, frequencies
 
-def display_plots(raw_signals, preprocessed_signals, time, frequencies, sampling_frequency):
+
+def display_plots(
+    raw_signals, preprocessed_signals, time, frequencies, sampling_frequency
+):
     """
     Display plots of raw signals and preprocessed spectrograms.
-    
+
     Parameters
     ----------
     raw_signals : numpy.ndarray
@@ -257,26 +290,35 @@ def display_plots(raw_signals, preprocessed_signals, time, frequencies, sampling
     sampling_frequency : float
         Sampling frequency in Hz.
     """
-    fig, axes = plt.subplots(1+len(preprocessed_signals), 1, sharex=True)
+    fig, axes = plt.subplots(1 + len(preprocessed_signals), 1, sharex=True)
     plot_raw_signals(
         raw_signals,
-        sampling_frequency = sampling_frequency,
-        ax                 = axes[0],
+        sampling_frequency=sampling_frequency,
+        ax=axes[0],
     )
     for signal, ax in zip(preprocessed_signals, axes[1:]):
-        ax.imshow(signal, aspect='auto', origin='lower', extent=[time[0], time[-1], frequencies[0], frequencies[-1]])
-        ax.set_ylabel('Frequency')
-    ax.set_xlabel('Time [seconds]')
+        ax.imshow(
+            signal,
+            aspect="auto",
+            origin="lower",
+            extent=[time[0], time[-1], frequencies[0], frequencies[-1]],
+        )
+        ax.set_ylabel("Frequency")
+    ax.set_xlabel("Time [seconds]")
 
-def preprocess_single_signal(raw_signal, sampling_frequency_in_hz,
-                           time_resolution_in_sec=1,
-                           low_cut=1.,
-                           high_cut=90.,
-                           notch_low_cut=45.,
-                           notch_high_cut=55.):
+
+def preprocess_single_signal(
+    raw_signal,
+    sampling_frequency_in_hz,
+    time_resolution_in_sec=1,
+    low_cut=1.0,
+    high_cut=90.0,
+    notch_low_cut=45.0,
+    notch_high_cut=55.0,
+):
     """
     Preprocess a single electrophysiological signal using spectrogram analysis.
-    
+
     Wrapper around get_spectrogram that:
     1) computes the spectrogram for the given LFP/EEG/EMG trace,
     2) normalizes it such that the power in a given frequency band is
@@ -311,10 +353,12 @@ def preprocess_single_signal(raw_signal, sampling_frequency_in_hz,
         The normalized spectrogram of the given signal.
     """
     # compute spectrogram
-    frequencies, time, spectrogram = get_spectrogram(raw_signal,
-                                                     fs       = sampling_frequency_in_hz,
-                                                     nperseg  = sampling_frequency_in_hz * time_resolution_in_sec,
-                                                     noverlap = 0)
+    frequencies, time, spectrogram = get_spectrogram(
+        raw_signal,
+        fs=sampling_frequency_in_hz,
+        nperseg=sampling_frequency_in_hz * time_resolution_in_sec,
+        noverlap=0,
+    )
 
     # exclude ill-determined frequencies
     mask = (frequencies >= low_cut) & (frequencies < high_cut)
@@ -334,14 +378,15 @@ def preprocess_single_signal(raw_signal, sampling_frequency_in_hz,
     spectrogram = np.log(spectrogram + 1)
 
     # normalize the data by de-meaning and rescaling by the standard deviation
-    spectrogram = robust_normalize(spectrogram, p=5., axis=1, method='standard score')
+    spectrogram = robust_normalize(spectrogram, p=5.0, axis=1, method="standard score")
 
     return time, frequencies, spectrogram
+
 
 def _validate_dependencies():
     """
     Validate that required modules are available.
-    
+
     Raises
     ------
     RuntimeError
@@ -354,18 +399,24 @@ def _validate_dependencies():
     except ImportError as e:
         raise RuntimeError(f"Missing required module: {e}")
 
+
 def _change_to_git_root():
     """
     Change working directory to git repository root.
-    
+
     Raises
     ------
     RuntimeError
         If not in a git repository or git command fails.
     """
     try:
-        git_root = subprocess.check_output(['git', 'rev-parse', '--show-toplevel'], 
-                                         stderr=subprocess.STDOUT).decode('utf-8').strip()
+        git_root = (
+            subprocess.check_output(
+                ["git", "rev-parse", "--show-toplevel"], stderr=subprocess.STDOUT
+            )
+            .decode("utf-8")
+            .strip()
+        )
         os.chdir(git_root)
     except subprocess.CalledProcessError:
         raise RuntimeError("Not in a git repository or git command failed")
