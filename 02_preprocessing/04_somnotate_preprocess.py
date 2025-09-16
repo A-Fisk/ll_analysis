@@ -43,6 +43,12 @@ from somnotate._utils import (
     robust_normalize,
 )
 
+from _configuration import (
+    time_resolution,
+    state_annotation_signals,
+    plot_raw_signals,
+)
+
 def main():
     """
     Main function to preprocess electrophysiological signals for sleep analysis.
@@ -66,9 +72,10 @@ def main():
 
 def setup_environment():
     """
-    Setup execution environment by changing to git repository root.
+    Setup execution environment by changing to git repository root and validating dependencies.
     """
     _change_to_git_root()
+    _validate_dependencies()
 
 def parse_arguments():
     """
@@ -79,12 +86,6 @@ def parse_arguments():
     args : argparse.Namespace
         Parsed command line arguments containing spreadsheet_file_path, show, and only.
     """
-    from _configuration import (
-        time_resolution,
-        state_annotation_signals,
-        plot_raw_signals,
-    )
-    
     parser = ArgumentParser()
     parser.add_argument("spreadsheet_file_path", help="Use datasets specified in /path/to/spreadsheet.csv")
     parser.add_argument("-s", "--show", action="store_true", help="Plot the output figures of the script.")
@@ -110,8 +111,6 @@ def load_and_validate_datasets(spreadsheet_file_path):
     datasets : pandas.DataFrame
         Validated dataframe containing dataset information.
     """
-    from configuration import state_annotation_signals
-    
     # load spreadsheet / data frame
     datasets = load_dataframe(spreadsheet_file_path)
 
@@ -179,12 +178,6 @@ def process_single_dataset(dataset, show_plots):
     show_plots : bool
         Whether to display plots for this dataset.
     """
-    from configuration import (
-        time_resolution,
-        state_annotation_signals,
-        plot_raw_signals,
-    )
-    
     # determine edf signals to load
     signal_labels = [dataset[column_name] for column_name in state_annotation_signals]
 
@@ -264,8 +257,6 @@ def display_plots(raw_signals, preprocessed_signals, time, frequencies, sampling
     sampling_frequency : float
         Sampling frequency in Hz.
     """
-    from configuration import plot_raw_signals
-    
     fig, axes = plt.subplots(1+len(preprocessed_signals), 1, sharex=True)
     plot_raw_signals(
         raw_signals,
@@ -346,6 +337,22 @@ def preprocess_single_signal(raw_signal, sampling_frequency_in_hz,
     spectrogram = robust_normalize(spectrogram, p=5., axis=1, method='standard score')
 
     return time, frequencies, spectrogram
+
+def _validate_dependencies():
+    """
+    Validate that required modules are available.
+    
+    Raises
+    ------
+    RuntimeError
+        If required modules are missing.
+    """
+    try:
+        import _data_io
+        import _configuration
+        import somnotate._utils
+    except ImportError as e:
+        raise RuntimeError(f"Missing required module: {e}")
 
 def _change_to_git_root():
     """
