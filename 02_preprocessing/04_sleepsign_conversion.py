@@ -8,10 +8,10 @@ import os
 import subprocess
 import warnings
 import numpy as np
+from argparse import ArgumentParser
 from somnotate._utils import convert_state_vector_to_state_intervals
 
-from data_io import (
-    ArgumentParser,
+from _data_io import (
     load_dataframe,
     check_dataframe,
     export_hypnogram,
